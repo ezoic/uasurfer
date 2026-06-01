@@ -1109,6 +1109,99 @@ func TestAgentSurfer(t *testing.T) {
 	}
 }
 
+func TestIsWebView(t *testing.T) {
+	tests := []struct {
+		name string
+		ua   string
+		want bool
+	}{
+		{
+			name: "real mobile safari",
+			ua:   "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Mobile/15E148 Safari/604.1",
+			want: false,
+		},
+		{
+			name: "chrome ios",
+			ua:   "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/124.0.6367.111 Mobile/15E148 Safari/604.1",
+			want: false,
+		},
+		{
+			name: "firefox ios",
+			ua:   "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) FxiOS/125.0 Mobile/15E148 Safari/605.1.15",
+			want: false,
+		},
+		{
+			name: "opera ios",
+			ua:   "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) OPiOS/4.5.0 Mobile/15E148 Safari/9537.53",
+			want: false,
+		},
+		{
+			name: "uc browser ios",
+			ua:   "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) UCBrowser/13.4.2.1307 Mobile/15E148 Safari/604.1",
+			want: false,
+		},
+		{
+			name: "samsung browser android",
+			ua:   "Mozilla/5.0 (Linux; Android 13; SM-G991B) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/22.0 Chrome/111.0.0.0 Mobile Safari/537.36",
+			want: false,
+		},
+		{
+			name: "android chrome",
+			ua:   "Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36",
+			want: false,
+		},
+		{
+			name: "bare ios wkwebview",
+			ua:   "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148",
+			want: true,
+		},
+		{
+			name: "facebook ios in app",
+			ua:   "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 [FBAN/FBIOS;FBAV/450.0]",
+			want: true,
+		},
+		{
+			name: "facebook iab",
+			ua:   "Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/120.0 Mobile Safari/537.36 [FB_IAB/FB4A;FBAV/450.0]",
+			want: true,
+		},
+		{
+			name: "instagram in app",
+			ua:   "Mozilla/5.0 (Linux; Android 13; SM-G991B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Mobile Safari/537.36 Instagram 300.0",
+			want: true,
+		},
+		{
+			name: "tiktok in app",
+			ua:   "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 BytedanceWebview TikTok",
+			want: true,
+		},
+		{
+			name: "android system webview",
+			ua:   "Mozilla/5.0 (Linux; Android 13; Pixel 7; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/120.0 Mobile Safari/537.36",
+			want: true,
+		},
+		{
+			name: "desktop chrome",
+			ua:   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+			want: false,
+		},
+		{
+			name: "empty",
+			ua:   "",
+			want: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := IsWebView(tt.ua, Parse(tt.ua))
+			if got != tt.want {
+				t.Fatalf("IsWebView() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func BenchmarkAgentSurfer(b *testing.B) {
 	num := len(testUAVars)
 	b.ResetTimer()
