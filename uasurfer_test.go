@@ -1234,7 +1234,7 @@ func BenchmarkEvalBrowserName(b *testing.B) {
 	v := UserAgent{}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		v.evalBrowserName(testUAVars[i%num].UA)
+		v.evalBrowserName(testUAVars[i%num].UA, Options{})
 	}
 }
 
@@ -1331,5 +1331,99 @@ func TestStringTrimPrefix(t *testing.T) {
 				t.Fatalf("Expected %q, got %q", tc.expected, s)
 			}
 		})
+	}
+}
+
+var edgeUAs = []struct {
+	name    string
+	ua      string
+	version Version
+}{
+	{"legacy edge desktop", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.123", Version{12, 123, 0}},
+	{"legacy edge windows phone", "Mozilla/5.0 (Windows Phone 10.0; Android 4.2.1; DEVICE INFO) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Mobile Safari/537.36 Edge/12.123", Version{12, 123, 0}},
+	{"chromium edge windows", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Edg/124.0.2478.80", Version{124, 0, 2478}},
+	{"chromium edge mac", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3803.0 Safari/537.36 Edg/76.0.176.0", Version{76, 0, 176}},
+	{"edge android", "Mozilla/5.0 (Linux; Android 9; motorola one) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.90 Mobile Safari/537.36 EdgA/42.0.2.3728", Version{42, 0, 2}},
+	{"edge iphone", "Mozilla/5.0 (iPhone; CPU iPhone OS 12_3_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0 EdgiOS/44.3.5 Mobile/15E148 Safari/605.1.15", Version{12, 0, 0}},
+	{"edge ipad", "Mozilla/5.0 (iPad; CPU OS 12_3_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0 EdgiOS/44.3.2 Mobile/15E148 Safari/605.1.15", Version{12, 0, 0}},
+	{"mixed case token", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 EDG/124.0.2478.80", Version{124, 0, 2478}},
+}
+
+func TestParseWithOptionsSplitEdge(t *testing.T) {
+	split := Options{SplitEdge: true}
+
+	for _, tc := range edgeUAs {
+		t.Run(tc.name, func(t *testing.T) {
+			got := ParseWithOptions(tc.ua, split)
+			def := Parse(tc.ua)
+
+			if got.Browser.Name != BrowserEdge {
+				t.Fatalf("SplitEdge browser = %v, want BrowserEdge", got.Browser.Name)
+			}
+			if got.Browser.FormattedName() != "Edge" {
+				t.Fatalf("FormattedName = %q, want Edge", got.Browser.FormattedName())
+			}
+			if got.Browser.Version != tc.version {
+				t.Fatalf("SplitEdge version = %v, want %v", got.Browser.Version, tc.version)
+			}
+			if def.Browser.Name != BrowserIE {
+				t.Fatalf("default Parse browser = %v, want BrowserIE", def.Browser.Name)
+			}
+			if def.Browser.Version != got.Browser.Version {
+				t.Fatalf("version differs from default Parse: got %v, default %v", got.Browser.Version, def.Browser.Version)
+			}
+			if got.OS != def.OS || got.DeviceType != def.DeviceType {
+				t.Fatalf("OS/device differ from default Parse: got %+v/%v, default %+v/%v", got.OS, got.DeviceType, def.OS, def.DeviceType)
+			}
+			if IsWebView(tc.ua, got) != IsWebView(tc.ua, def) {
+				t.Fatalf("IsWebView differs from default Parse")
+			}
+			if got.IsBot() {
+				t.Fatalf("Edge classified as bot")
+			}
+		})
+	}
+}
+
+func TestParseWithOptionsSplitEdgeLeavesOthersAlone(t *testing.T) {
+	split := Options{SplitEdge: true}
+	cases := []struct {
+		name string
+		ua   string
+	}{
+		{"msie 10", "Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.2; Trident/6.0)"},
+		{"trident ie11", "Mozilla/5.0 (Windows NT 6.3; Trident/7.0; .NET4.0E; .NET4.0C; rv:11.0) like Gecko"},
+		{"iemobile", "Mozilla/5.0 (Mobile; Windows Phone 8.1; Android 4.0; ARM; Trident/7.0; Touch; rv:11.0; IEMobile/11.0; NOKIA; Lumia 520) like iPhone OS 7_0_3 Mac OS X AppleWebKit/537 (KHTML, like Gecko) Mobile Safari/537"},
+		{"chrome", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"},
+		{"googlebot", "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"},
+		{"bingbot", "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)"},
+		{"empty", ""},
+		{"malformed", ")("},
+		{"bare edge word", "edge"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := ParseWithOptions(tc.ua, split)
+			want := Parse(tc.ua)
+			if *got != *want {
+				t.Fatalf("ParseWithOptions = %+v, want same as Parse %+v", *got, *want)
+			}
+		})
+	}
+
+	if b := ParseWithOptions("Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.2; Trident/6.0)", split).Browser.Name; b != BrowserIE {
+		t.Fatalf("MSIE with SplitEdge = %v, want BrowserIE", b)
+	}
+	if !ParseWithOptions("Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)", split).IsBot() {
+		t.Fatalf("googlebot not a bot with SplitEdge")
+	}
+}
+
+func TestParseWithOptionsZeroValueMatchesParse(t *testing.T) {
+	for _, determined := range testUAVars {
+		got := ParseWithOptions(determined.UA, Options{})
+		if *got != *Parse(determined.UA) {
+			t.Fatalf("zero Options differs from Parse for %q: %+v", determined.UA, *got)
+		}
 	}
 }

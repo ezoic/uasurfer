@@ -72,6 +72,9 @@ const (
 	BrowserYandexBot
 	BrowserCocCocBot
 	BrowserYahooBot // Bot list ends here
+	// BrowserEdge is only returned by ParseWithOptions with SplitEdge set; it
+	// sits after the bot range so existing numeric values and IsBot are unchanged.
+	BrowserEdge
 )
 
 // StringTrimPrefix is like String() but trims the "Browser" prefix
@@ -202,10 +205,19 @@ func (ua *UserAgent) IsBot() bool {
 	return false
 }
 
+// Options changes how ParseWithOptions classifies user agents. The zero value
+// gives the same result as Parse.
+type Options struct {
+	// SplitEdge reports Microsoft Edge (Edge/, Edg/, EdgA/, EdgiOS/) as
+	// BrowserEdge instead of BrowserIE. Internet Explorer stays BrowserIE.
+	SplitEdge bool
+}
+
 // Parse accepts a raw user agent (string) and returns the UserAgent.
+// Microsoft Edge is reported as BrowserIE; use ParseWithOptions to split it out.
 func Parse(ua string) *UserAgent {
 	dest := new(UserAgent)
-	parse(ua, dest)
+	parse(ua, dest, Options{})
 	return dest
 }
 
@@ -213,10 +225,17 @@ func Parse(ua string) *UserAgent {
 // It is the caller's responsibility to call Reset() on the UserAgent before
 // passing it to this function.
 func ParseUserAgent(ua string, dest *UserAgent) {
-	parse(ua, dest)
+	parse(ua, dest, Options{})
 }
 
-func parse(ua string, dest *UserAgent) {
+// ParseWithOptions is the same as Parse, with classification changed by opts.
+func ParseWithOptions(ua string, opts Options) *UserAgent {
+	dest := new(UserAgent)
+	parse(ua, dest, opts)
+	return dest
+}
+
+func parse(ua string, dest *UserAgent, opts Options) {
 	ua = normalise(ua)
 	switch {
 	case len(ua) == 0:
@@ -227,7 +246,7 @@ func parse(ua string, dest *UserAgent) {
 
 	// stop on on first case returning true
 	case dest.evalOS(ua):
-	case dest.evalBrowserName(ua):
+	case dest.evalBrowserName(ua, opts):
 	default:
 		dest.evalBrowserVersion(ua)
 		dest.evalDevice(ua)
