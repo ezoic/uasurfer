@@ -22,10 +22,11 @@ const _DeviceType_name = "DeviceUnknownDeviceComputerDeviceTabletDevicePhoneDevi
 var _DeviceType_index = [...]uint8{0, 13, 27, 39, 50, 63, 77, 85}
 
 func (i DeviceType) String() string {
-	if i < 0 || i >= DeviceType(len(_DeviceType_index)-1) {
+	idx := int(i) - 0
+	if i < 0 || idx >= len(_DeviceType_index)-1 {
 		return "DeviceType(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
-	return _DeviceType_name[_DeviceType_index[i]:_DeviceType_index[i+1]]
+	return _DeviceType_name[_DeviceType_index[idx]:_DeviceType_index[idx+1]]
 }
 func _() {
 	// An "invalid array index" compiler error signifies that the constant values have changed.
@@ -68,17 +69,19 @@ func _() {
 	_ = x[BrowserYandexBot-34]
 	_ = x[BrowserCocCocBot-35]
 	_ = x[BrowserYahooBot-36]
+	_ = x[BrowserEdge-37]
 }
 
-const _BrowserName_name = "BrowserUnknownBrowserChromeBrowserIEBrowserSafariBrowserFirefoxBrowserAndroidBrowserOperaBrowserBlackberryBrowserUCBrowserBrowserSilkBrowserNokiaBrowserNetFrontBrowserQQBrowserMaxthonBrowserSogouExplorerBrowserSpotifyBrowserNintendoBrowserSamsungBrowserYandexBrowserCocCocBrowserOperaMiniBrowserPuffinBrowserFBAppBrowserBotBrowserAppleBotBrowserBaiduBotBrowserBingBotBrowserDuckDuckGoBotBrowserFacebookBotBrowserGoogleBotBrowserLinkedInBotBrowserMsnBotBrowserPingdomBotBrowserTwitterBotBrowserYandexBotBrowserCocCocBotBrowserYahooBot"
+const _BrowserName_name = "BrowserUnknownBrowserChromeBrowserIEBrowserSafariBrowserFirefoxBrowserAndroidBrowserOperaBrowserBlackberryBrowserUCBrowserBrowserSilkBrowserNokiaBrowserNetFrontBrowserQQBrowserMaxthonBrowserSogouExplorerBrowserSpotifyBrowserNintendoBrowserSamsungBrowserYandexBrowserCocCocBrowserOperaMiniBrowserPuffinBrowserFBAppBrowserBotBrowserAppleBotBrowserBaiduBotBrowserBingBotBrowserDuckDuckGoBotBrowserFacebookBotBrowserGoogleBotBrowserLinkedInBotBrowserMsnBotBrowserPingdomBotBrowserTwitterBotBrowserYandexBotBrowserCocCocBotBrowserYahooBotBrowserEdge"
 
-var _BrowserName_index = [...]uint16{0, 14, 27, 36, 49, 63, 77, 89, 106, 122, 133, 145, 160, 169, 183, 203, 217, 232, 246, 259, 272, 288, 301, 313, 323, 338, 353, 367, 387, 405, 421, 439, 452, 469, 486, 502, 518, 533}
+var _BrowserName_index = [...]uint16{0, 14, 27, 36, 49, 63, 77, 89, 106, 122, 133, 145, 160, 169, 183, 203, 217, 232, 246, 259, 272, 288, 301, 313, 323, 338, 353, 367, 387, 405, 421, 439, 452, 469, 486, 502, 518, 533, 544}
 
 func (i BrowserName) String() string {
-	if i < 0 || i >= BrowserName(len(_BrowserName_index)-1) {
+	idx := int(i) - 0
+	if i < 0 || idx >= len(_BrowserName_index)-1 {
 		return "BrowserName(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
-	return _BrowserName_name[_BrowserName_index[i]:_BrowserName_index[i+1]]
+	return _BrowserName_name[_BrowserName_index[idx]:_BrowserName_index[idx+1]]
 }
 func _() {
 	// An "invalid array index" compiler error signifies that the constant values have changed.
@@ -106,10 +109,11 @@ const _OSName_name = "OSUnknownOSWindowsPhoneOSWindowsOSMacOSXOSiOSOSAndroidOSBl
 var _OSName_index = [...]uint8{0, 9, 23, 32, 40, 45, 54, 66, 76, 84, 91, 98, 111, 117, 127, 132}
 
 func (i OSName) String() string {
-	if i < 0 || i >= OSName(len(_OSName_index)-1) {
+	idx := int(i) - 0
+	if i < 0 || idx >= len(_OSName_index)-1 {
 		return "OSName(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
-	return _OSName_name[_OSName_index[i]:_OSName_index[i+1]]
+	return _OSName_name[_OSName_index[idx]:_OSName_index[idx+1]]
 }
 func _() {
 	// An "invalid array index" compiler error signifies that the constant values have changed.
@@ -136,8 +140,9 @@ const _Platform_name = "PlatformUnknownPlatformWindowsPlatformMacPlatformLinuxPl
 var _Platform_index = [...]uint8{0, 15, 30, 41, 54, 66, 80, 92, 110, 130, 149, 161, 177, 191, 202}
 
 func (i Platform) String() string {
-	if i < 0 || i >= Platform(len(_Platform_index)-1) {
+	idx := int(i) - 0
+	if i < 0 || idx >= len(_Platform_index)-1 {
 		return "Platform(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
-	return _Platform_name[_Platform_index[i]:_Platform_index[i+1]]
+	return _Platform_name[_Platform_index[idx]:_Platform_index[idx+1]]
 }

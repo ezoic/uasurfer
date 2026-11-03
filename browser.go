@@ -8,7 +8,8 @@ import (
 // with its browser version number. Browser are grouped together without
 // consideration for device. For example, Chrome (Chrome/43.0) and Chrome for iOS
 // (CriOS/43.0) would both return as "chrome" (name) and 43.0 (version). Similarly
-// Internet Explorer 11 and Edge 12 would return as "ie" and "11" or "12", respectively.
+// Internet Explorer 11 and Edge 12 would return as "ie" and "11" or "12", respectively,
+// unless Options.SplitEdge is set, in which case Edge returns as BrowserEdge.
 // type Browser struct {
 // 		Name    BrowserName
 // 		Version struct {
@@ -19,7 +20,7 @@ import (
 // }
 
 // Retrieve browser name from UA strings
-func (u *UserAgent) evalBrowserName(ua string) bool {
+func (u *UserAgent) evalBrowserName(ua string, opts Options) bool {
 	// Blackberry goes first because it reads as MSIE & Safari
 	if strings.Contains(ua, "blackberry") || strings.Contains(ua, "playbook") || strings.Contains(ua, "bb10") || strings.Contains(ua, "rim ") {
 		u.Browser.Name = BrowserBlackberry
@@ -43,7 +44,10 @@ func (u *UserAgent) evalBrowserName(ua string) bool {
 		case strings.Contains(ua, "silk/"):
 			u.Browser.Name = BrowserSilk
 
-		case strings.Contains(ua, "edg/") || strings.Contains(ua, "edgios/") || strings.Contains(ua, "edga/") || strings.Contains(ua, "edge/") || strings.Contains(ua, "iemobile/") || strings.Contains(ua, "msie "):
+		case opts.SplitEdge && hasEdgeToken(ua):
+			u.Browser.Name = BrowserEdge
+
+		case hasEdgeToken(ua) || strings.Contains(ua, "iemobile/") || strings.Contains(ua, "msie "):
 			u.Browser.Name = BrowserIE
 
 		case strings.Contains(ua, "ucbrowser/") || strings.Contains(ua, "ucweb/"):
@@ -171,6 +175,10 @@ notwebkit:
 	return u.maybeBot()
 }
 
+func hasEdgeToken(ua string) bool {
+	return strings.Contains(ua, "edg/") || strings.Contains(ua, "edgios/") || strings.Contains(ua, "edga/") || strings.Contains(ua, "edge/")
+}
+
 // Retrieve browser version
 // Methods used in order:
 // 1st: look for generic version/#
@@ -196,7 +204,8 @@ func (u *UserAgent) evalBrowserVersion(ua string) {
 			return
 		}
 		_ = u.Browser.Version.findVersionNumber(ua, "qqbrowser/")
-	case BrowserIE:
+	// Edge shares the IE lookup so opted-in versions match what Parse reports.
+	case BrowserIE, BrowserEdge:
 		if u.Browser.Version.findVersionNumber(ua, "msie ") || u.Browser.Version.findVersionNumber(ua, "edge/") || u.Browser.Version.findVersionNumber(ua, "edgios/") || u.Browser.Version.findVersionNumber(ua, "edga/") || u.Browser.Version.findVersionNumber(ua, "edg/") {
 			return
 		}

@@ -59,12 +59,26 @@ where example UserAgent is:
 }
 ```
 
+### ParseWithOptions(ua string, opts Options) Function
+
+`ParseWithOptions()` works like `Parse()` but takes an `Options` struct. The zero value gives exactly the `Parse()` result.
+
+* `SplitEdge` - report Microsoft Edge as `BrowserEdge` instead of `BrowserIE`. Internet Explorer (`MSIE`, `Trident`, `IEMobile`) stays `BrowserIE`. OS, device type and browser version are the same as `Parse()` returns.
+
+```
+ua := uasurfer.ParseWithOptions(myUA, uasurfer.Options{SplitEdge: true})
+ua.Browser.FormattedName() // "Edge" for Edge, "IE" for Internet Explorer
+```
+
+`Parse()` and `ParseUserAgent()` keep reporting Edge as `BrowserIE`.
+
 **Usage note:** There are some OSes that do not return a version, see docs below. Linux is typically not reported with a specific Linux distro name or version.
 
 #### Browser Name
 * `BrowserChrome` - Google [Chrome](https://en.wikipedia.org/wiki/Google_Chrome), [Chromium](https://en.wikipedia.org/wiki/Chromium_(web_browser))
 * `BrowserSafari` - Apple [Safari](https://en.wikipedia.org/wiki/Safari_(web_browser)), Google Search ([GSA](https://itunes.apple.com/us/app/google/id284815942))
-* `BrowserIE` - Microsoft [Internet Explorer](https://en.wikipedia.org/wiki/Internet_Explorer), [Edge](https://en.wikipedia.org/wiki/Microsoft_Edge)
+* `BrowserIE` - Microsoft [Internet Explorer](https://en.wikipedia.org/wiki/Internet_Explorer), and [Edge](https://en.wikipedia.org/wiki/Microsoft_Edge) unless `SplitEdge` is set (see below)
+* `BrowserEdge` - Microsoft [Edge](https://en.wikipedia.org/wiki/Microsoft_Edge) (`Edge/`, `Edg/`, `EdgA/`, `EdgiOS/`); only returned by `ParseWithOptions` with `SplitEdge: true`
 * `BrowserFirefox` - Mozilla [Firefox](https://en.wikipedia.org/wiki/Firefox), GNU [IceCat](https://en.wikipedia.org/wiki/GNU_IceCat), [Iceweasel](https://en.wikipedia.org/wiki/Mozilla_Corporation_software_rebranded_by_the_Debian_project#Iceweasel), [Seamonkey](https://en.wikipedia.org/wiki/SeaMonkey)
 * `BrowserAndroid` - Android [WebView](https://developer.chrome.com/multidevice/webview/overview) (Android OS <4.4 only)
 * `BrowserOpera` - [Opera](https://en.wikipedia.org/wiki/Opera_(web_browser))
