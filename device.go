@@ -6,9 +6,6 @@ import (
 
 func (u *UserAgent) evalDevice(ua string) {
 	switch {
-	// evalPuffin only runs for X11-style Puffin UAs. Current Puffin on Android
-	// sends a normal "Linux; Android" UA, so let those fall through to the
-	// Android rules instead of leaving the device unknown.
 	case u.Browser.Name == BrowserPuffin && (u.DeviceType != DeviceUnknown || !strings.Contains(ua, "android")):
 		return
 
