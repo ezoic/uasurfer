@@ -1427,3 +1427,24 @@ func TestParseWithOptionsZeroValueMatchesParse(t *testing.T) {
 		}
 	}
 }
+
+func TestPuffinDeviceType(t *testing.T) {
+	cases := []struct {
+		name string
+		ua   string
+		want DeviceType
+	}{
+		{"android phone UA", "Mozilla/5.0 (Linux; Android 16; 2602BPC18G Build/BP2A.250605.031.A3; en-gb) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.66 Mobile Safari/537.36 Puffin/10.6.1.98088AP", DevicePhone},
+		{"android tablet UA", "Mozilla/5.0 (Linux; Android 13; SM-T505N Build/TP1A.220624.014; en-us) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.66 Safari/537.36 Puffin/10.6.1.98088AT", DeviceTablet},
+		{"x11 phone suffix", "Mozilla/5.0 (X11; U; Linux x86_64; en-US) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1700.72 Safari/537.36 Puffin/4.1.4.1183AP", DevicePhone},
+		{"x11 tv suffix unchanged", "Mozilla/5.0 (X11; U; U; Linux x86_64; ar-eg) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.66 Safari/537.36 Puffin/10.1.1.70327AV", DeviceUnknown},
+		{"windows desktop unchanged", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36 Puffin/156.0.117.578WD", DeviceUnknown},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := Parse(tc.ua).DeviceType; got != tc.want {
+				t.Fatalf("DeviceType = %v, want %v", got, tc.want)
+			}
+		})
+	}
+}

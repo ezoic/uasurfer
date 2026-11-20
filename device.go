@@ -6,7 +6,7 @@ import (
 
 func (u *UserAgent) evalDevice(ua string) {
 	switch {
-	case u.Browser.Name == BrowserPuffin:
+	case u.Browser.Name == BrowserPuffin && (u.DeviceType != DeviceUnknown || !strings.Contains(ua, "android")):
 		return
 
 	case u.Browser.Name == BrowserOperaMini:
